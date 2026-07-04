@@ -10,7 +10,9 @@ The original [PresButan](https://presbutan.macupdate.com/) (v1.4, last updated *
 - **Return/Enter** opens the selected file instead of renaming it.
 - **Delete/Backspace** moves the selection to Trash instead of doing nothing.
 
-It ships as a **32-bit Intel/PPC** binary. Apple removed all 32-bit app support in **macOS 10.15 Catalina (2019)**, so PresButan has been unable to even launch on any macOS for ~6 years — and definitely not on macOS 27. Even a naive 64-bit recompile would fail against modern macOS security (Accessibility/TCC permissions, Gatekeeper notarization, SIP) because its event-injection approach predates all of that.
+The public **MacUpdate listing** shows an ancient v1.4 (32-bit Intel/PPC, 2012). But that is *not* the build people actually run — a 32-bit binary cannot launch after macOS 10.15 Catalina removed 32-bit support, yet a later **64-bit** recompile has kept working for years. It ran fine on **macOS 26.5** and only stopped **a few days ago**, coinciding with an upgrade to **macOS 27** (this machine now reports Darwin 27).
+
+So the accurate picture is *not* "dead since 2019" — it is **freshly broken on macOS 27**, with no maintainer to fix it (last official release: 2012). Whether macOS 27 changed the event-tap / Finder-Accessibility path, or merely reset the app's Accessibility permission on upgrade, the conclusion is the same: an abandoned 2012-era app that no one will patch. (A permission re-grant is worth trying as a stopgap, but does not change the case for a maintained successor.)
 
 **Goal:** Build a clean, modern successor that restores this behavior on current and future macOS, distributed as an open-source app.
 
