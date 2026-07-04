@@ -163,7 +163,6 @@ presbutan_reborn/
 | Keypad Enter | 76 |
 | Delete (Backspace) | 51 |
 | Forward Delete | 117 |
-| Down Arrow | 125 |
 | O | 31 |
 
 Synthetic outputs: Open = `O`+⌘ · Trash = `Delete`+⌘ · Delete Immediately = `Delete`+⌘+⌥.
