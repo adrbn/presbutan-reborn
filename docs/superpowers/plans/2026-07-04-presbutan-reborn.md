@@ -834,7 +834,7 @@ git commit -m "feat: add menu-bar status item and menu"
 
 **Files:**
 - Create: `Sources/PresButanReborn/AppDelegate.swift`
-- Create: `Sources/PresButanReborn/main.swift`
+- Replace: `Sources/PresButanReborn/main.swift` (a placeholder was added early during Task 2 to satisfy the linker — overwrite its contents with the real bootstrap below)
 
 **Interfaces:**
 - Consumes: `FinderContext`, `EventPoster`, `KeyTap`, `Permissions`, `MenuBarController`.
@@ -888,7 +888,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 - [ ] **Step 2: Implement `main.swift`**
 
-Create `Sources/PresButanReborn/main.swift`:
+Replace the placeholder `Sources/PresButanReborn/main.swift` (added during Task 2) with:
 
 ```swift
 import AppKit
