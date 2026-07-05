@@ -37,6 +37,11 @@ final class MenuBarController: NSObject {
         loginItem.target = self
         menu.addItem(loginItem)
 
+        let checkUpdates = NSMenuItem(
+            title: "Check for Updates…", action: #selector(checkForUpdates), keyEquivalent: "")
+        checkUpdates.target = self
+        menu.addItem(checkUpdates)
+
         menu.addItem(.separator())
 
         let quit = NSMenuItem(
@@ -68,6 +73,10 @@ final class MenuBarController: NSObject {
             alert.runModal()
         }
         refresh()
+    }
+
+    @objc private func checkForUpdates() {
+        UpdateChecker.checkInteractively()
     }
 
     @objc private func quit() {
