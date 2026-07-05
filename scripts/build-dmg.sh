@@ -14,9 +14,10 @@ APP_DIR="${OUT}/${APP_NAME}.app"
 
 echo "==> Assembling ${APP_DIR}…"
 rm -rf "$APP_DIR"
-mkdir -p "${APP_DIR}/Contents/MacOS"
+mkdir -p "${APP_DIR}/Contents/MacOS" "${APP_DIR}/Contents/Resources"
 cp "$BIN" "${APP_DIR}/Contents/MacOS/${EXECUTABLE}"
 cp "Resources/Info.plist" "${APP_DIR}/Contents/Info.plist"
+cp "Resources/AppIcon.icns" "${APP_DIR}/Contents/Resources/AppIcon.icns"
 
 # --- Signing / notarization hook (unsigned-first; enable when an account exists) ---
 # codesign --force --options runtime --sign "Developer ID Application: NAME (TEAMID)" "$APP_DIR"
