@@ -3,13 +3,16 @@ import AppKit
 final class MenuBarController: NSObject {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let permissionItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
-    private let loginItem = NSMenuItem(
-        title: "Launch at Login", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
+    private let loginItem = NSMenuItem()
 
     override init() {
         super.init()
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "return", accessibilityDescription: "PresButan Reborn")
+            if let image = NSImage(systemSymbolName: "return", accessibilityDescription: "PresButan Reborn") {
+                button.image = image
+            } else {
+                button.title = "PB"
+            }
         }
         buildMenu()
         refresh()
@@ -29,6 +32,8 @@ final class MenuBarController: NSObject {
 
         menu.addItem(.separator())
 
+        loginItem.title = "Launch at Login"
+        loginItem.action = #selector(toggleLaunchAtLogin)
         loginItem.target = self
         menu.addItem(loginItem)
 

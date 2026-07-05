@@ -31,6 +31,7 @@ final class FinderContext: FinderContextProviding {
         }
 
         // focusedElement is an AXUIElement (CFType).
+        guard CFGetTypeID(focusedElement) == AXUIElementGetTypeID() else { return true }
         let element = focusedElement as! AXUIElement
         var roleValue: AnyObject?
         let roleErr = AXUIElementCopyAttributeValue(

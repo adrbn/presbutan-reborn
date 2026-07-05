@@ -1,5 +1,6 @@
 import CoreGraphics
 import CoreFoundation
+import os
 
 enum TapDecision: Equatable {
     case passThrough
@@ -16,6 +17,7 @@ final class KeyTap {
     private let poster: EventPosting
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
+    private let log = Logger(subsystem: "com.presbutanreborn.app", category: "KeyTap")
 
     init(context: FinderContextProviding, poster: EventPosting) {
         self.context = context
@@ -56,8 +58,11 @@ final class KeyTap {
             callback: KeyTap.cCallback,
             userInfo: Unmanaged.passUnretained(self).toOpaque()
         ) else {
+            log.error("failed to create event tap — is Accessibility granted?")
             return false
         }
+
+        log.info("event tap created")
 
         let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
         CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
@@ -74,6 +79,7 @@ final class KeyTap {
         }
         if let tap = eventTap {
             CGEvent.tapEnable(tap: tap, enable: false)
+            CFMachPortInvalidate(tap)
         }
         eventTap = nil
         runLoopSource = nil
@@ -85,8 +91,9 @@ final class KeyTap {
         return tap.handle(type: type, event: event)
     }
 
-    private func handle(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
+    func handle(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+            log.notice("event tap disabled by system; re-enabling")
             if let tap = eventTap { CGEvent.tapEnable(tap: tap, enable: true) }
             return Unmanaged.passUnretained(event)
         }

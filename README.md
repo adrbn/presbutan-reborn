@@ -32,6 +32,10 @@ Accessibility API), so renames still commit correctly and only Finder is affecte
 A background agent (`LSUIElement`, no Dock icon) installs a `CGEventTap`. When
 Finder is frontmost and you are *not* editing text, it remaps Return→⌘O,
 Delete→⌘⌫, and Shift+Delete→⌘⌥⌫. All other keys and apps are untouched.
+The tap listens for key-down events only; it reads key codes and modifier
+flags to decide whether to remap, and it never logs, stores, or transmits
+keystrokes — the macOS Accessibility permission is the OS-enforced consent
+boundary.
 
 ## Build from source
 
@@ -40,6 +44,11 @@ swift build
 swift test
 ./scripts/build-dmg.sh   # produces build/PresButanReborn.dmg
 ```
+
+Note: `swift run` runs the bare executable, which lacks the app bundle's
+`Info.plist` identity — so `LSUIElement` (no Dock icon), Launch-at-Login, and
+a stable Accessibility grant only behave correctly from the packaged `.app`
+(build it with `./scripts/build-dmg.sh`). QA the installed app, not `swift run`.
 
 ## License
 

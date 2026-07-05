@@ -45,3 +45,37 @@ final class KeyTapTests: XCTestCase {
         XCTAssertEqual(d, .passThrough)
     }
 }
+
+final class CapturingPoster: EventPosting {
+    var posted: [[SyntheticKey]] = []
+    func post(_ keys: [SyntheticKey]) { posted.append(keys) }
+}
+
+extension KeyTapTests {
+    func testHandlePassesThroughSyntheticEventWithoutReposting() {
+        let poster = CapturingPoster()
+        let ctx = StubFinderContext(); ctx.frontmost = true; ctx.editing = false
+        let tap = KeyTap(context: ctx, poster: poster)
+        let src = CGEventSource(stateID: .combinedSessionState)
+        let ev = CGEvent(keyboardEventSource: src, virtualKey: KeyCode.returnKey, keyDown: true)!
+        ev.flags = []
+        ev.setIntegerValueField(.eventSourceUserData, value: KeyTap.sentinel)
+        let result = tap.handle(type: .keyDown, event: ev)
+        XCTAssertNotNil(result, "synthetic (sentinel-tagged) events must pass through")
+        XCTAssertEqual(poster.posted.count, 0, "synthetic events must not be re-posted")
+    }
+
+    func testHandleRemapsBareReturnInFinder() {
+        let poster = CapturingPoster()
+        let ctx = StubFinderContext(); ctx.frontmost = true; ctx.editing = false
+        let tap = KeyTap(context: ctx, poster: poster)
+        let src = CGEventSource(stateID: .combinedSessionState)
+        let ev = CGEvent(keyboardEventSource: src, virtualKey: KeyCode.returnKey, keyDown: true)!
+        ev.flags = []
+        ev.setIntegerValueField(.eventSourceUserData, value: 0)
+        let result = tap.handle(type: .keyDown, event: ev)
+        XCTAssertNil(result, "a bare Return in Finder (not editing) must be swallowed")
+        XCTAssertEqual(poster.posted, [[SyntheticKey(keyCode: KeyCode.letterO, flags: .maskCommand)]],
+                       "a bare Return must post exactly one Cmd-O")
+    }
+}
