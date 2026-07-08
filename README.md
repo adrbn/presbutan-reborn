@@ -26,10 +26,11 @@ PresButan Reborn is a tiny, open-source menu-bar utility that restores the Windo
 | <kbd>Delete</kbd> / <kbd>⌫</kbd> | — | **Moves** the selection to Trash |
 | <kbd>Delete</kbd> | <kbd>Shift</kbd> | **Deletes immediately** (with Finder's native confirmation) |
 
-- 🪶 **Invisible** — runs as a menu-bar agent with no Dock icon, out of your way.
+- 🪶 **Invisible** — runs as a menu-bar agent with no Dock icon, out of your way. Hide the menu-bar icon too and it disappears entirely until you reopen the app.
 - 🎯 **Finder-only & rename-safe** — never fires while you're renaming a file or typing in a text field, and other apps are completely untouched.
 - 🔒 **Private by design** — inspects only key-down events and never logs, stores, or transmits keystrokes.
 - 🚀 **Launch at Login** and **Check for Updates**, built in.
+- ❤️ **Links** to the [GitHub repo](https://github.com/adrbn/presbutan-reborn) and a [Ko-fi donate](https://ko-fi.com/adrbn) page, straight from the menu.
 - ⚡ **Native Swift**, zero dependencies, macOS 13 Ventura and later (including macOS 27).
 
 ## Why
@@ -45,6 +46,12 @@ The original PresButan is abandonware — its last release was in 2012. A 64-bit
 4. Grant Accessibility so it can remap keys:
    **System Settings → Privacy & Security → Accessibility → enable _PresButan Reborn_.**
 5. Use the menu-bar icon (<kbd>⏎</kbd>) to toggle **Launch at Login** or **Check for Updates**.
+
+### Hide the menu-bar icon
+
+Want PresButan Reborn to run with zero menu-bar clutter? Open the menu and check **Hide Menu Bar Icon**. The icon vanishes but the app keeps running in the background.
+
+To bring it back, just **open PresButan Reborn again** from `/Applications` or Spotlight — the icon reappears for that session. (The hide preference still applies on the next launch, so the icon stays out of your way across reboots. To show it permanently, uncheck **Hide Menu Bar Icon** from the menu.)
 
 ## How it works
 
@@ -71,6 +78,10 @@ The app icon is generated from `scripts/make-icon.swift`.
 - [ ] Developer ID signing + notarization (remove the Gatekeeper warning)
 - [ ] Homebrew cask
 - [ ] Optional per-behavior toggles
+
+## Support
+
+PresButan Reborn is free, open-source, and built on evenings. If it saves you time, [a Ko-fi](https://ko-fi.com/adrbn) is very welcome — and stars on [GitHub](https://github.com/adrbn/presbutan-reborn) help others find it.
 
 ## Contributing
 

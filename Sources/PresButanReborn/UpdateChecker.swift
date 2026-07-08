@@ -8,6 +8,7 @@ import Foundation
 /// is public and has at least one published release.
 enum UpdateChecker {
     static let repository = "adrbn/presbutan-reborn"
+    static let repositoryURL = URL(string: "https://github.com/\(repository)")!
     static let releasesPageURL = URL(string: "https://github.com/\(repository)/releases/latest")!
     private static let latestReleaseAPI =
         URL(string: "https://api.github.com/repos/\(repository)/releases/latest")!
