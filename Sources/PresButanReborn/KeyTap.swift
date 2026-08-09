@@ -31,7 +31,8 @@ final class KeyTap {
                        keyCode: CGKeyCode,
                        flags: CGEventFlags,
                        finderFrontmost: Bool,
-                       editing: Bool) -> TapDecision {
+                       editing: Bool,
+                       overlayFocused: Bool) -> TapDecision {
         guard type == .keyDown else { return .passThrough }
         if isSynthetic { return .passThrough }
 
@@ -41,6 +42,9 @@ final class KeyTap {
         // Only after confirming this is a remap candidate do we consult Finder state,
         // so normal typing never triggers an Accessibility read.
         guard finderFrontmost, !editing else { return .passThrough }
+        // Finder owns the menu bar but an overlay panel (Spotlight, Raycast…) can own
+        // the keyboard. Remapping then steals the key from a window we know nothing about.
+        guard !overlayFocused else { return .passThrough }
         if isRepeat { return .swallow }
         return .remap(keys)
     }
@@ -111,10 +115,15 @@ final class KeyTap {
         }
         let frontmost = (isCandidate && !isSynthetic) ? context.isFinderFrontmost() : false
         let editing = frontmost ? context.isEditingText() : false
+        let overlayFocused = (frontmost && !editing) ? context.overlayPanelHasKeyboardFocus() : false
+        if overlayFocused {
+            log.debug("overlay panel owns the keyboard — passing key through")
+        }
 
         switch KeyTap.decide(type: type, isSynthetic: isSynthetic, isRepeat: isRepeat,
                              keyCode: keyCode, flags: event.flags,
-                             finderFrontmost: frontmost, editing: editing) {
+                             finderFrontmost: frontmost, editing: editing,
+                             overlayFocused: overlayFocused) {
         case .passThrough:
             return Unmanaged.passUnretained(event)
         case .swallow:
