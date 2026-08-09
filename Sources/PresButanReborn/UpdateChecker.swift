@@ -18,8 +18,9 @@ enum UpdateChecker {
         (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "0.0.0"
     }
 
-    /// Fetches the latest release and shows an alert (up-to-date / update available / error).
-    static func checkInteractively() {
+    /// Fetches the latest release and reports the outcome on the main queue.
+    /// Shared by the menu item and the background scheduler.
+    static func fetchOutcome(completion: @escaping (Outcome) -> Void) {
         var request = URLRequest(url: latestReleaseAPI)
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
         request.timeoutInterval = 15
@@ -28,8 +29,14 @@ enum UpdateChecker {
             let outcome = evaluate(current: current, data: data,
                                    status: (response as? HTTPURLResponse)?.statusCode,
                                    error: error)
-            DispatchQueue.main.async { present(outcome) }
+            DispatchQueue.main.async { completion(outcome) }
         }.resume()
+    }
+
+    /// Fetches the latest release and shows an alert (up-to-date / update available / error).
+    /// Always reports something — the user asked, so silence would look broken.
+    static func checkInteractively() {
+        fetchOutcome { present($0) }
     }
 
     // MARK: - Pure logic (unit-tested)
@@ -84,6 +91,33 @@ enum UpdateChecker {
     }
 
     // MARK: - Presentation
+
+    enum UpdateResponse { case viewRelease, skipVersion, later }
+
+    /// Alert for a background-discovered update. Unlike the interactive path this
+    /// offers "Skip This Version", so the user can silence a release for good.
+    static func presentBackgroundUpdate(latest: String, current: String) -> UpdateResponse {
+        // A menu-bar accessory is not the active app when the timer fires, so the
+        // alert would otherwise open behind whatever the user is working in.
+        NSApp.activate(ignoringOtherApps: true)
+
+        let alert = NSAlert()
+        alert.messageText = "Update available"
+        alert.informativeText = "PresButan Reborn \(latest) is available (you have \(current))."
+        alert.addButton(withTitle: "View Release")
+        alert.addButton(withTitle: "Skip This Version")
+        alert.addButton(withTitle: "Later")
+
+        switch alert.runModal() {
+        case .alertFirstButtonReturn:
+            NSWorkspace.shared.open(releasesPageURL)
+            return .viewRelease
+        case .alertSecondButtonReturn:
+            return .skipVersion
+        default:
+            return .later
+        }
+    }
 
     private static func present(_ outcome: Outcome) {
         let alert = NSAlert()

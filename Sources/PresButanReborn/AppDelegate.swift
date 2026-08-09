@@ -6,6 +6,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let poster = EventPoster()
     private lazy var keyTap = KeyTap(context: context, poster: poster)
     private var menu: MenuBarController?
+    private let updates = UpdateScheduler()
     private var permissionTimer: Timer?
     private var didCompleteLaunch = false
     private let log = OSLog(subsystem: "com.presbutanreborn.app", category: "launch")
@@ -33,6 +34,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
         Permissions.promptIfNeeded()
         startTapWhenTrusted()
+        updates.start()
         didCompleteLaunch = true
     }
 
@@ -95,6 +97,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         DistributedNotificationCenter.default().removeObserver(self)
         keyTap.stop()
+        updates.stop()
         permissionTimer?.invalidate()
     }
 }
