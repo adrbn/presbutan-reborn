@@ -74,17 +74,26 @@ swift test             # run the unit tests
 ```
 
 `build-dmg.sh` picks up a **Developer ID Application** identity from the keychain
-automatically and falls back to ad-hoc signing when none is present. Releases are
-cut locally rather than in CI, because GitHub runners have no access to the
-certificate and an ad-hoc DMG would cost every user a fresh Accessibility grant:
+automatically and falls back to ad-hoc signing when none is present.
+
+## Releasing
 
 ```bash
-NOTARY_PROFILE=<profile> ./scripts/build-dmg.sh   # sign + notarize + staple
-gh release create vX.Y.Z build/PresButanReborn.dmg --notes "…"
+./scripts/release.sh 1.0.3
 ```
 
-Create the notarization profile once with
-`xcrun notarytool store-credentials <profile> --apple-id … --team-id …`.
+That bumps the version, runs the tests, builds, signs, notarizes and staples the
+DMG, tags, pushes, and publishes the GitHub release. It refuses to run on a dirty
+tree, off `main`, behind `origin`, on an existing tag, or — most importantly —
+without a Developer ID identity, since an ad-hoc build would silently cost every
+user a fresh Accessibility grant.
+
+Releases are cut locally rather than in CI because GitHub runners have no access
+to the certificate. Create the notarization profile once with:
+
+```bash
+xcrun notarytool store-credentials presbutan --apple-id <apple-id> --team-id <team-id>
+```
 
 > `swift run` launches the bare executable, which lacks the app bundle's `Info.plist` identity — so `LSUIElement`, Launch at Login, and a stable Accessibility grant only behave correctly from the packaged `.app`. Always QA the installed app.
 
