@@ -53,8 +53,10 @@ command -v gh >/dev/null || die "gh CLI not found"
 gh auth status >/dev/null 2>&1 || die "gh is not authenticated; run: gh auth login"
 
 echo "About to release v$VERSION (currently $CURRENT)."
-read -r -p "Continue? [y/N] " reply
-[[ "$reply" =~ ^[Yy]$ ]] || die "aborted"
+# `|| true` so a closed stdin aborts with a message instead of exiting silently
+# under `set -e`.
+read -r -p "Continue? [y/N] " reply || true
+[[ "${reply:-}" =~ ^[Yy]$ ]] || die "aborted"
 
 # ---------------------------------------------------------------- build
 
