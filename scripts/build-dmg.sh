@@ -9,11 +9,20 @@ OUT="build"
 # Signing identity. Auto-detected from the keychain when present; override with
 # SIGN_IDENTITY=... to pick a specific one. Falls back to ad-hoc so the build
 # still works on machines without the certificate (CI runners, contributors).
-SIGN_IDENTITY="${SIGN_IDENTITY:-$(
-    security find-identity -v -p codesigning 2>/dev/null \
-        | grep "Developer ID Application" | head -1 \
-        | sed -E 's/.*"(.*)".*/\1/'
-)}"
+if [ -z "${SIGN_IDENTITY:-}" ]; then
+    CANDIDATES=$(security find-identity -v -p codesigning 2>/dev/null \
+        | grep "Developer ID Application" | sed -E 's/.*"(.*)".*/\1/')
+    COUNT=$(printf '%s' "$CANDIDATES" | grep -c . || true)
+    if [ "$COUNT" -gt 1 ]; then
+        # Picking arbitrarily could ship a release signed by a certificate that
+        # is about to expire, or one you meant to retire. Make the choice explicit.
+        echo "error: several Developer ID Application identities in the keychain:" >&2
+        printf '  %s\n' $CANDIDATES >&2
+        echo "Set SIGN_IDENTITY to the one you want." >&2
+        exit 1
+    fi
+    SIGN_IDENTITY="$CANDIDATES"
+fi
 
 # Optional notarization: set NOTARY_PROFILE to a profile created once with
 #   xcrun notarytool store-credentials <name> --apple-id … --team-id … --password …
