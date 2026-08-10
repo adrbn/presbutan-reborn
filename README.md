@@ -41,11 +41,14 @@ The original PresButan is abandonware — its last release was in 2012. A 64-bit
 
 1. Download `PresButanReborn.dmg` from the [latest release](https://github.com/adrbn/presbutan-reborn/releases/latest).
 2. Open the DMG and drag **PresButan Reborn** into `/Applications`.
-3. Builds are currently **unsigned**, so macOS Gatekeeper warns on first launch. **Right-click the app → Open → Open.**
-   <sub>Or clear the quarantine flag: `xattr -dr com.apple.quarantine "/Applications/PresButan Reborn.app"`</sub>
-4. Grant Accessibility so it can remap keys:
+3. Grant Accessibility so it can remap keys:
    **System Settings → Privacy & Security → Accessibility → enable _PresButan Reborn_.**
-5. Use the menu-bar icon (<kbd>⏎</kbd>) to toggle **Launch at Login** or **Check for Updates**.
+4. Use the menu-bar icon (<kbd>⏎</kbd>) to toggle **Launch at Login** or **Check for Updates**.
+
+Builds are signed with Developer ID and notarized, so they open normally — no
+Gatekeeper detour. Because the signature carries a stable code identity, the
+Accessibility grant also survives updates: you authorise the app once, not again
+after every release.
 
 ### Hide the menu-bar icon
 
@@ -58,6 +61,7 @@ To bring it back, just **open PresButan Reborn again** from `/Applications` or S
 PresButan Reborn runs as an `LSUIElement` background agent and installs a `CGEventTap`. When Finder is frontmost **and** you are not editing text, it swallows the key and posts the equivalent Finder shortcut: <kbd>Return</kbd> → ⌘O, <kbd>Delete</kbd> → ⌘⌫, <kbd>Shift</kbd>+<kbd>Delete</kbd> → ⌘⌥⌫.
 
 - **Rename-safe.** It reads Finder's focused UI element through the Accessibility API; if a text field has focus (you're renaming, or typing in search), the key passes straight through. If that state can't be read, it fails safe and does nothing.
+- **Overlay-safe.** Spotlight, Raycast and Alfred take the keyboard without becoming the frontmost app, so "Finder is in front" is not enough to claim a key. It compares the frontmost app against the owner of the system-wide focused element and keeps its hands off whenever a panel is holding the keyboard.
 - **No feedback loops.** Every synthetic event it posts is tagged and ignored by its own tap.
 - **Nothing leaves your Mac.** The tap inspects key codes and modifier flags to make a decision — that's all. The Accessibility permission is the OS-enforced boundary that you control.
 
@@ -69,13 +73,26 @@ swift test             # run the unit tests
 ./scripts/build-dmg.sh # produce build/PresButanReborn.dmg
 ```
 
+`build-dmg.sh` picks up a **Developer ID Application** identity from the keychain
+automatically and falls back to ad-hoc signing when none is present. Releases are
+cut locally rather than in CI, because GitHub runners have no access to the
+certificate and an ad-hoc DMG would cost every user a fresh Accessibility grant:
+
+```bash
+NOTARY_PROFILE=<profile> ./scripts/build-dmg.sh   # sign + notarize + staple
+gh release create vX.Y.Z build/PresButanReborn.dmg --notes "…"
+```
+
+Create the notarization profile once with
+`xcrun notarytool store-credentials <profile> --apple-id … --team-id …`.
+
 > `swift run` launches the bare executable, which lacks the app bundle's `Info.plist` identity — so `LSUIElement`, Launch at Login, and a stable Accessibility grant only behave correctly from the packaged `.app`. Always QA the installed app.
 
 The app icon is generated from `scripts/make-icon.swift`.
 
 ## Roadmap
 
-- [ ] Developer ID signing + notarization (remove the Gatekeeper warning)
+- [x] Developer ID signing + notarization (remove the Gatekeeper warning)
 - [ ] Homebrew cask
 - [ ] Optional per-behavior toggles
 

@@ -1,22 +1,46 @@
-name: Release
+name: Release checks
+
+# Release artefacts are NOT built here any more.
+#
+# GitHub runners have no access to the Developer ID Application certificate, so
+# this workflow could only ever produce an ad-hoc signed DMG. That is actively
+# harmful for this app: an ad-hoc signature has no stable code identity, so its
+# designated requirement is the cdhash, which changes on every build — macOS then
+# treats each update as a different app and users must re-grant Accessibility
+# every single time. It also means a Gatekeeper warning on every download.
+#
+# Releases are therefore built locally, signed with Developer ID and notarized:
+#
+#   NOTARY_PROFILE=presbutan ./scripts/build-dmg.sh
+#   gh release create vX.Y.Z build/PresButanReborn.dmg --notes "…"
+#
+# To move this back into CI, add the certificate (.p12, base64) and notarization
+# credentials as repository secrets and import them into a temporary keychain
+# before calling the build script. That puts a code-signing key in GitHub, which
+# is a deliberate trade-off — decide it explicitly rather than by default.
 
 on:
   push:
     tags: ["v*"]
 
-permissions:
-  contents: write
-
 jobs:
-  release:
+  verify:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build DMG
+
+      - name: Tag must match the version in Info.plist
         run: |
-          chmod +x scripts/build-dmg.sh
-          ./scripts/build-dmg.sh
-      - name: Attach DMG to release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: build/PresButanReborn.dmg
+          TAG="${GITHUB_REF_NAME#v}"
+          PLIST=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" Resources/Info.plist)
+          echo "tag=$TAG  Info.plist=$PLIST"
+          if [ "$TAG" != "$PLIST" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match CFBundleShortVersionString $PLIST"
+            exit 1
+          fi
+
+      - name: Build
+        run: swift build
+
+      - name: Test
+        run: swift test
