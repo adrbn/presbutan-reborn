@@ -25,6 +25,12 @@
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-f59e0b?style=for-the-badge&labelColor=1e1e2e" alt="License: GPL-3.0"></a>
 </p>
 
+https://github.com/user-attachments/assets/f987b190-bc15-41f3-af90-95666e915389
+
+<p align="center">
+  <sub>Animated demo: Finder is redrawn to show the keys, it's not a screen recording.</sub>
+</p>
+
 <p align="center">
   <a href="#get-started">Get started</a> ·
   <a href="#the-keys">The keys</a> ·
